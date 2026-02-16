@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Budget App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- iOS App Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+</head>
+
+<body>
+  <div class="app">
+    <h1>Budget Tracker</h1>
+
+    <!-- Backup reminder banner -->
+    <div id="backupBanner" class="banner" style="display:none;">
+      <div id="backupBannerText" class="banner-text"></div>
+      <div class="banner-actions">
+        <button id="backupNowBtn" type="button">Save backup</button>
+        <button id="backupDismissBtn" type="button" class="ghost">Dismiss</button>
+      </div>
+    </div>
+
+    <!-- PERIOD SELECTION -->
+    <div class="card">
+      <h2>Select Period</h2>
+
+      <label>Year:
+        <select id="yearSelect"></select>
+      </label>
+
+      <label>Month:
+        <select id="monthSelect"></select>
+      </label>
+
+      <button id="jumpTodayBtn" type="button">Jump to Current Month</button>
+
+      <div class="backup-row">
+        <button type="button" onclick="saveBackup()">Save Backup (JSON)</button>
+
+        <input type="file" id="backupFile" accept="application/json" style="display:none"
+               onchange="handleBackupFile(event)" />
+        <button type="button" onclick="document.getElementById('backupFile').click()">Load Backup (JSON)</button>
+      </div>
+    </div>
+
+    <!-- ADD EXPENSE -->
+    <div class="card">
+      <h2>Add Expense</h2>
+
+      <label>Category:
+        <select id="mainCategory"></select>
+      </label>
+
+      <label id="subCategoryWrapper">Subcategory:
+        <select id="subCategory"></select>
+      </label>
+
+      <label>Amount (€):
+        <input type="number" id="amount" step="0.01" min="0" />
+      </label>
+
+      <label>Note (optional):
+        <input type="text" id="note" />
+      </label>
+
+      <label class="checkbox">
+        <input type="checkbox" id="recurring" />
+        Monthly recurring
+      </label>
+
+      <button type="button" onclick="addExpense()">Add Expense</button>
+    </div>
+
+    <!-- EXPENSE LIST -->
+    <div class="card">
+      <h2>Expenses</h2>
+      <div id="expenseList"></div>
+    </div>
+
+    <!-- CATEGORY CHART -->
+    <div class="card">
+      <h2>Category Chart</h2>
+
+      <label>View:
+        <select id="chartView">
+          <option value="main">Main categories</option>
+          <option value="sub">Subcategories</option>
+        </select>
+      </label>
+
+      <canvas id="chart"></canvas>
+    </div>
+
+    <!-- MONTHLY COMPARISON -->
+    <div class="card">
+      <h2>Monthly Comparison</h2>
+
+      <label>Compare:
+        <select id="compareCategory"></select>
+      </label>
+
+      <canvas id="monthlyChart"></canvas>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="card">
+      <h2>Export</h2>
+      <button type="button" onclick="exportPDF()">Export Full Year to PDF</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

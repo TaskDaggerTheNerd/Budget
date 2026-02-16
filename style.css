@@ -1,0 +1,128 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f2f2f7;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 { text-align: center; }
+
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+}
+
+input, select, textarea, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+button {
+  background: #007aff;
+  color: white;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover { background: #005ecb; }
+
+button.ghost {
+  background: #e5e5ea;
+  color: #111;
+}
+
+.backup-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Backup banner */
+.banner {
+  background: white;
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+}
+.banner-text { color: #333; }
+.banner-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Expense item base */
+.expense-item {
+  background: #f9f9f9;
+  border-radius: 15px;
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.amount { font-weight: bold; }
+.note { font-size: 14px; color: #8e8e93; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f2f2f7;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+/* ----------------------------
+   Swipe-to-reveal actions
+   ---------------------------- */
+.swipe-item {
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+}
+
+.swipe-actions button {
+  width: 92px;
+  border-radius: 0;
+  margin: 0;
+  height: 100%;
+}
+
+.swipe-actions .editBtn { background: #007aff; }
+.swipe-actions .deleteBtn { background: #ff3b30; }
+
+.swipe-content {
+  position: relative;
+  z-index: 2;
+  background: #f9f9f9;
+  padding: 12px;
+  transition: transform 0.18s ease;
+  will-change: transform;
+}
