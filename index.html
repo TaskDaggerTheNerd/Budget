@@ -16,7 +16,17 @@
 
 <body>
   <div class="app">
-    <h1>Budget Tracker</h1>
+    <div class="app-header">
+      <h1>Budget Tracker</h1>
+
+      <label class="toggle" title="Dark mode">
+        <input type="checkbox" id="darkModeToggle" />
+        <span class="toggle-track">
+          <span class="toggle-thumb"></span>
+        </span>
+        <span class="toggle-label">Dark</span>
+      </label>
+    </div>
 
     <!-- Backup reminder banner -->
     <div id="backupBanner" class="banner" style="display:none;">
@@ -80,7 +90,28 @@
 
     <!-- EXPENSE LIST -->
     <div class="card">
-      <h2>Expenses</h2>
+      <div class="card-header">
+        <h2>Expenses</h2>
+        <div class="card-total" id="expensesTotal">Total: €0,00</div>
+      </div>
+
+      <div class="filters">
+        <label>
+          Main:
+          <select id="filterMain"></select>
+        </label>
+
+        <label>
+          Sub:
+          <select id="filterSub"></select>
+        </label>
+
+        <label class="search">
+          Search notes:
+          <input type="text" id="filterSearch" placeholder="Type to search..." />
+        </label>
+      </div>
+
       <div id="expenseList"></div>
     </div>
 
