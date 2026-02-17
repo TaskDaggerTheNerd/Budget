@@ -659,6 +659,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (exceptEl && it === exceptEl) return;
         content.style.transform = "translateX(0px)";
         it.dataset.open = "0";
+        content.style.pointerEvents = "auto";
       });
     }
 
@@ -702,12 +703,14 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch { x = 0; }
 
         if (x < -maxSwipe / 2) {
-          content.style.transform = `translateX(${-maxSwipe}px)`;
-          item.dataset.open = "1";
-        } else {
-          content.style.transform = "translateX(0px)";
-          item.dataset.open = "0";
-        }
+  content.style.transform = `translateX(${-maxSwipe}px)`;
+  item.dataset.open = "1";
+  content.style.pointerEvents = "none"; // allow tapping buttons
+} else {
+  content.style.transform = "translateX(0px)";
+  item.dataset.open = "0";
+  content.style.pointerEvents = "auto";
+}
       });
     });
   }

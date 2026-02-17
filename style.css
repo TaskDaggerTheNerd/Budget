@@ -223,13 +223,14 @@ button.ghost:hover{
   border: 1px solid var(--border);
 }
 
-/* Swipe-to-reveal actions */
+/* Swipe-to-reveal actions (FIXED) */
 .swipe-item{
   position: relative;
   overflow: hidden;
   touch-action: pan-y;
 }
 
+/* Buttons live BEHIND the content */
 .swipe-actions{
   position:absolute;
   top:0;
@@ -237,27 +238,37 @@ button.ghost:hover{
   height:100%;
   display:flex;
   align-items:stretch;
+  z-index: 1;
 }
+
 .swipe-actions button{
   width: 92px;
   border-radius: 0;
   margin: 0;
   height: 100%;
+  font-weight: 700;
 }
+
 .swipe-actions .editBtn{ background: var(--blue); }
 .swipe-actions .deleteBtn{ background: var(--danger); }
 
+/* The moving card (OPAQUE so buttons are hidden until swipe) */
 .swipe-content{
   position: relative;
   z-index: 2;
-  background: rgba(142,142,147,0.10);
+  width: 100%;
+  background: #f9f9f9;     /* fully opaque */
   padding: 12px;
+  border-radius: 15px;      /* covers edges so nothing peeks through */
   transition: transform 0.18s ease;
   will-change: transform;
+  transform: translateX(0px);
 }
+
 body.dark .swipe-content{
-  background: rgba(255,255,255,0.03);
+  background: #1c1c1e;       /* fully opaque in dark mode */
 }
+
 
 .amount{ font-weight: 800; }
 .note{ font-size: 14px; color: var(--muted); }
