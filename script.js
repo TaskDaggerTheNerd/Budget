@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const categories = {
     "Rent": [],
     "Food": ["Restaurant","Snack","Supermarket"],
-    "Transport": ["Fuel","Electric","Parking","Uber"],
+    "Transport": ["Fuel","Electric","Parking","Toll","Uber"],
     "Subscriptions": ["Netflix","Prime","HBO"],
     "Shopping": [],
     "Health": [],
@@ -60,6 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
     "Travel": "✈️",
     "Others": "✨"
   };
+
   function catLabel(main, sub) {
     const e = CATEGORY_EMOJIS[main] || "•";
     return `${e} ${main}${sub ? " – " + sub : ""}`;
@@ -82,8 +83,41 @@ document.addEventListener("DOMContentLoaded", function () {
   const compareCategory = document.getElementById("compareCategory");
   const chartViewEl = document.getElementById("chartView");
 
+  // Filters (Expenses block)
+  const filterMain = document.getElementById("filterMain");
+  const filterSub = document.getElementById("filterSub");
+  const filterSearch = document.getElementById("filterSearch");
+  const expensesTotalEl = document.getElementById("expensesTotal");
+
+  // Dark mode toggle
+  const darkToggle = document.getElementById("darkModeToggle");
+
   let currentYear = new Date().getFullYear();
   let currentMonth = new Date().getMonth();
+
+  // This holds the currently displayed entries (after filters/search),
+  // so Edit/Delete/StopRecurring target the correct record.
+  let currentVisibleEntries = [];
+
+  // =========================
+  // Dark Mode
+  // =========================
+  function applyTheme(theme) {
+    const isDark = theme === "dark";
+    document.body.classList.toggle("dark", isDark);
+    if (darkToggle) darkToggle.checked = isDark;
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  }
+
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") applyTheme("dark");
+  else applyTheme("light");
+
+  if (darkToggle) {
+    darkToggle.addEventListener("change", () => {
+      applyTheme(darkToggle.checked ? "dark" : "light");
+    });
+  }
 
   // =========================
   // Populate Year/Month
@@ -144,24 +178,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if (compareCategory) {
-    compareCategory.innerHTML = "";
-    const totalOpt = document.createElement("option");
-    totalOpt.value = "Total";
-    totalOpt.textContent = "Total";
-    compareCategory.appendChild(totalOpt);
-
-    Object.keys(categories).forEach(cat => {
-      const opt = document.createElement("option");
-      opt.value = cat;
-      opt.textContent = cat;
-      compareCategory.appendChild(opt);
-    });
-
-    compareCategory.value = "Total";
-  }
-
-  function updateSubcategories() {
+  function updateAddSubcategories() {
     if (!subCategory || !mainCategory) return;
     subCategory.innerHTML = "";
 
@@ -181,8 +198,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  if (mainCategory) mainCategory.addEventListener("change", updateSubcategories);
-  updateSubcategories();
+  if (mainCategory) mainCategory.addEventListener("change", updateAddSubcategories);
+  updateAddSubcategories();
+
+  // Compare dropdown
+  if (compareCategory) {
+    compareCategory.innerHTML = "";
+    const totalOpt = document.createElement("option");
+    totalOpt.value = "Total";
+    totalOpt.textContent = "Total";
+    compareCategory.appendChild(totalOpt);
+
+    Object.keys(categories).forEach(cat => {
+      const opt = document.createElement("option");
+      opt.value = cat;
+      opt.textContent = cat;
+      compareCategory.appendChild(opt);
+    });
+
+    compareCategory.value = "Total";
+  }
 
   // Ensure dropdown changes update charts immediately
   if (chartViewEl) chartViewEl.addEventListener("change", render);
@@ -190,6 +225,70 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Expose render in case any inline calls exist
   window.render = render;
+
+  // =========================
+  // Filters setup
+  // =========================
+  function populateMainFilter() {
+    if (!filterMain) return;
+    filterMain.innerHTML = "";
+    const all = document.createElement("option");
+    all.value = "All";
+    all.textContent = "All";
+    filterMain.appendChild(all);
+
+    Object.keys(categories).forEach(cat => {
+      const opt = document.createElement("option");
+      opt.value = cat;
+      opt.textContent = cat;
+      filterMain.appendChild(opt);
+    });
+  }
+
+  function populateSubFilter(mainValue) {
+    if (!filterSub) return;
+    filterSub.innerHTML = "";
+    const all = document.createElement("option");
+    all.value = "All";
+    all.textContent = "All";
+    filterSub.appendChild(all);
+
+    // If main is specific, only show its subs (if any)
+    if (mainValue && mainValue !== "All") {
+      const subs = categories[mainValue] || [];
+      subs.forEach(sub => {
+        const opt = document.createElement("option");
+        opt.value = sub;
+        opt.textContent = sub;
+        filterSub.appendChild(opt);
+      });
+      // If no subs exist, keep only "All"
+      return;
+    }
+
+    // Main = All => show all subs across categories (unique)
+    const allSubs = new Set();
+    Object.values(categories).forEach(list => (list || []).forEach(s => allSubs.add(s)));
+    Array.from(allSubs).sort().forEach(sub => {
+      const opt = document.createElement("option");
+      opt.value = sub;
+      opt.textContent = sub;
+      filterSub.appendChild(opt);
+    });
+  }
+
+  populateMainFilter();
+  populateSubFilter("All");
+
+  if (filterMain) {
+    filterMain.addEventListener("change", () => {
+      populateSubFilter(filterMain.value);
+      if (filterSub) filterSub.value = "All";
+      render();
+    });
+  }
+  if (filterSub) filterSub.addEventListener("change", render);
+  if (filterSearch) filterSearch.addEventListener("input", render);
 
   // =========================
   // Recurring logic (Option C)
@@ -277,8 +376,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.deleteExpense = function (index) {
-    const entries = getMonthEntries(currentYear, currentMonth);
-    const entry = entries[index];
+    const entry = currentVisibleEntries[index];
     if (!entry) return;
 
     const arr = data[entry.sourceKey];
@@ -290,14 +388,13 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.editExpense = function (index) {
-    const entries = getMonthEntries(currentYear, currentMonth);
-    const entry = entries[index];
+    const entry = currentVisibleEntries[index];
     if (!entry) return;
 
     const item = entry.expense;
 
     if (mainCategory) mainCategory.value = item.main;
-    updateSubcategories();
+    updateAddSubcategories();
     if (item.sub && subCategory && subCategory.style.display !== "none") subCategory.value = item.sub;
 
     const amountEl = document.getElementById("amount");
@@ -313,8 +410,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.stopRecurring = function (index) {
-    const entries = getMonthEntries(currentYear, currentMonth);
-    const entry = entries[index];
+    const entry = currentVisibleEntries[index];
     if (!entry) return;
 
     const exp = entry.expense;
@@ -493,7 +589,7 @@ document.addEventListener("DOMContentLoaded", function () {
   window.saveBackup = function () {
     const payload = {
       app: "BudgetTracker",
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       budgetDataV2: data
     };
@@ -556,7 +652,6 @@ document.addEventListener("DOMContentLoaded", function () {
   function enableSwipe() {
     const items = document.querySelectorAll(".swipe-item");
 
-    // Close all open rows
     function closeAll(exceptEl = null) {
       items.forEach(it => {
         const content = it.querySelector(".swipe-content");
@@ -567,7 +662,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
-    // Tap anywhere closes open swipe
     document.addEventListener("touchstart", (e) => {
       const inside = e.target.closest?.(".swipe-item");
       if (!inside) closeAll(null);
@@ -576,13 +670,10 @@ document.addEventListener("DOMContentLoaded", function () {
     items.forEach(item => {
       const content = item.querySelector(".swipe-content");
       if (!content) return;
-
-      // prevent binding twice
       if (item.dataset.swipeBound === "1") return;
       item.dataset.swipeBound = "1";
 
       let startX = 0;
-      let currentX = 0;
       let dragging = false;
       const maxSwipe = 184; // 2 buttons x ~92
 
@@ -594,10 +685,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       item.addEventListener("touchmove", (e) => {
         if (!dragging) return;
-        currentX = e.touches[0].clientX;
+        const currentX = e.touches[0].clientX;
         const dx = currentX - startX;
 
-        // swipe left only
         const translate = Math.max(-maxSwipe, Math.min(0, dx));
         content.style.transform = `translateX(${translate}px)`;
       }, { passive: true });
@@ -605,15 +695,11 @@ document.addEventListener("DOMContentLoaded", function () {
       item.addEventListener("touchend", () => {
         dragging = false;
 
-        // Read current translateX
         let x = 0;
         try {
           const m = new DOMMatrixReadOnly(getComputedStyle(content).transform);
           x = m.m41 || 0;
-        } catch {
-          // fallback: if transform is none
-          x = 0;
-        }
+        } catch { x = 0; }
 
         if (x < -maxSwipe / 2) {
           content.style.transform = `translateX(${-maxSwipe}px)`;
@@ -729,7 +815,6 @@ document.addEventListener("DOMContentLoaded", function () {
             color: #666;
           }
 
-          /* print layout */
           @page { size: A4 landscape; margin: 15mm; }
           .page-1 { max-width: 900px; margin: 0 auto; }
           .page-2 { page-break-before: always; }
@@ -815,6 +900,37 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   // =========================
+  // Helpers: apply filters + search
+  // =========================
+  function applyListFilters(entries) {
+    const mainVal = filterMain?.value || "All";
+    const subVal = filterSub?.value || "All";
+    const q = (filterSearch?.value || "").trim().toLowerCase();
+
+    return entries.filter(e => {
+      const exp = e.expense;
+
+      if (mainVal !== "All" && exp.main !== mainVal) return false;
+      if (subVal !== "All") {
+        if (!exp.sub || exp.sub !== subVal) return false;
+      }
+
+      if (q) {
+        const note = (exp.note || "").toLowerCase();
+        if (!note.includes(q)) return false;
+      }
+
+      return true;
+    });
+  }
+
+  function updateDisplayedTotal() {
+    if (!expensesTotalEl) return;
+    const total = currentVisibleEntries.reduce((sum, e) => sum + (Number(e.expense.amount) || 0), 0);
+    expensesTotalEl.textContent = `Total: ${fmtEUR(total)}`;
+  }
+
+  // =========================
   // Render UI
   // =========================
   function render() {
@@ -824,18 +940,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const chartView = chartViewEl?.value || "main";
     const compare = compareCategory?.value || "Total";
 
+    // All entries for the month (used for charts)
+    const allEntries = getMonthEntries(currentYear, currentMonth);
+
+    // Filtered entries (used for list + total)
+    currentVisibleEntries = applyListFilters(allEntries);
+
+    // Build list
     list.innerHTML = "";
-    const entries = getMonthEntries(currentYear, currentMonth);
-
-    const grouping = {};
-    const groupingMeta = {};
-
-    entries.forEach((entry, visibleIndex) => {
+    currentVisibleEntries.forEach((entry, visibleIndex) => {
       const item = entry.expense;
-
-      const groupKey = (chartView === "main") ? item.main : (item.sub || item.main);
-      grouping[groupKey] = (grouping[groupKey] || 0) + (Number(item.amount) || 0);
-      if (chartView === "sub" && item.sub) groupingMeta[item.sub] = item.main;
 
       const row = document.createElement("div");
       row.className = "expense-item swipe-item";
@@ -862,6 +976,19 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
 
       list.appendChild(row);
+    });
+
+    // Total for currently displayed (filtered) list
+    updateDisplayedTotal();
+
+    // Build chart grouping from ALL entries (unfiltered)
+    const grouping = {};
+    const groupingMeta = {};
+    allEntries.forEach((entry) => {
+      const item = entry.expense;
+      const groupKey = (chartView === "main") ? item.main : (item.sub || item.main);
+      grouping[groupKey] = (grouping[groupKey] || 0) + (Number(item.amount) || 0);
+      if (chartView === "sub" && item.sub) groupingMeta[item.sub] = item.main;
     });
 
     drawCategoryChart(grouping, groupingMeta);
