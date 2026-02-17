@@ -1,128 +1,275 @@
-body {
+/* =========================
+   Theme variables
+   ========================= */
+:root{
+  --bg: #f2f2f7;
+  --card: #ffffff;
+  --text: #111111;
+  --muted: #8e8e93;
+  --border: #dddddd;
+
+  --shadow: 0 6px 15px rgba(0,0,0,0.08);
+
+  --blue: #007aff;
+  --blueHover: #005ecb;
+  --danger: #ff3b30;
+
+  --chipBg: #f2f2f7;
+
+  --bannerShadow: 0 8px 18px rgba(0,0,0,0.06);
+}
+
+body.dark{
+  --bg: #0b0b0f;
+  --card: #14141a;
+  --text: #f4f4f7;
+  --muted: #b0b0b6;
+  --border: #2a2a33;
+
+  --shadow: 0 10px 24px rgba(0,0,0,0.35);
+
+  --chipBg: #1e1e26;
+  --bannerShadow: 0 10px 22px rgba(0,0,0,0.45);
+}
+
+body{
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f2f2f7;
+  background: var(--bg);
+  color: var(--text);
   margin: 0;
   padding: 20px;
 }
 
-h1 { text-align: center; }
+.app{
+  max-width: 980px;
+  margin: 0 auto;
+}
 
-.card {
-  background: white;
+/* Header with dark mode toggle */
+.app-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+h1{ margin: 8px 0 0; }
+
+/* Toggle */
+.toggle{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  user-select:none;
+  cursor:pointer;
+  font-size: 14px;
+  color: var(--muted);
+}
+.toggle input{ display:none; }
+.toggle-track{
+  width: 46px;
+  height: 28px;
+  background: rgba(142,142,147,0.35);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  position: relative;
+  transition: background .2s ease;
+}
+.toggle-thumb{
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border-radius: 999px;
+  position:absolute;
+  top: 50%;
+  left: 3px;
+  transform: translateY(-50%);
+  transition: left .2s ease, background .2s ease;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+body.dark .toggle-track{
+  background: rgba(0,122,255,0.35);
+}
+body.dark .toggle-thumb{
+  left: 21px;
+  background: #fff;
+}
+.toggle-label{ font-weight: 600; }
+
+/* Cards */
+.card{
+  background: var(--card);
   border-radius: 20px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(0,0,0,0.02);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+.card:hover{
+  transform: translateY(-2px);
 }
 
-input, select, textarea, button {
+/* Inputs */
+input, select, textarea, button{
   width: 100%;
   padding: 12px;
   margin-top: 10px;
   border-radius: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   font-size: 16px;
   box-sizing: border-box;
+  background: transparent;
+  color: var(--text);
 }
 
-button {
-  background: #007aff;
-  color: white;
+input::placeholder{ color: var(--muted); }
+
+button{
+  background: var(--blue);
+  color: #fff;
   border: none;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
 }
 
-button:hover { background: #005ecb; }
+button:hover{ background: var(--blueHover); }
 
-button.ghost {
-  background: #e5e5ea;
-  color: #111;
+button.ghost{
+  background: rgba(142,142,147,0.25);
+  color: var(--text);
+}
+button.ghost:hover{
+  background: rgba(142,142,147,0.35);
 }
 
-.backup-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
+.backup-row{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
 }
+.backup-row button{ margin-top: 0; }
+.backup-row input{ margin-top: 0; }
 
-/* Backup banner */
-.banner {
-  background: white;
+/* Banner */
+.banner{
+  background: var(--card);
   border-radius: 18px;
   padding: 14px;
-  margin-bottom: 18px;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+  margin: 10px 0 18px;
+  box-shadow: var(--bannerShadow);
+  border: 1px solid var(--border);
 }
-.banner-text { color: #333; }
-.banner-actions {
-  display: flex;
-  gap: 10px;
+.banner-text{
+  color: var(--text);
+  font-size: 14px;
+}
+.banner-actions{
+  display:flex;
+  gap:10px;
   margin-top: 10px;
 }
+.banner-actions button{ margin-top: 0; }
 
-/* Expense item base */
-.expense-item {
-  background: #f9f9f9;
+/* Expenses card header + filters */
+.card-header{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap: 12px;
+}
+.card-total{
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.filters{
+  display:grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 10px;
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+.filters label{
+  font-size: 13px;
+  color: var(--muted);
+}
+.filters select, .filters input{
+  margin-top: 6px;
+}
+.filters .search{
+  grid-column: span 1;
+}
+
+@media (max-width: 760px){
+  .filters{
+    grid-template-columns: 1fr 1fr;
+  }
+  .filters .search{
+    grid-column: 1 / -1;
+  }
+}
+
+/* Expense item */
+.expense-item{
   border-radius: 15px;
   margin-bottom: 10px;
   position: relative;
   overflow: hidden;
+  border: 1px solid var(--border);
 }
 
-.amount { font-weight: bold; }
-.note { font-size: 14px; color: #8e8e93; }
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #f2f2f7;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  margin-top: 6px;
-}
-
-/* ----------------------------
-   Swipe-to-reveal actions
-   ---------------------------- */
-.swipe-item {
+/* Swipe-to-reveal actions */
+.swipe-item{
   position: relative;
   overflow: hidden;
   touch-action: pan-y;
 }
 
-.swipe-actions {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 100%;
-  display: flex;
-  align-items: stretch;
+.swipe-actions{
+  position:absolute;
+  top:0;
+  right:0;
+  height:100%;
+  display:flex;
+  align-items:stretch;
 }
-
-.swipe-actions button {
+.swipe-actions button{
   width: 92px;
   border-radius: 0;
   margin: 0;
   height: 100%;
 }
+.swipe-actions .editBtn{ background: var(--blue); }
+.swipe-actions .deleteBtn{ background: var(--danger); }
 
-.swipe-actions .editBtn { background: #007aff; }
-.swipe-actions .deleteBtn { background: #ff3b30; }
-
-.swipe-content {
+.swipe-content{
   position: relative;
   z-index: 2;
-  background: #f9f9f9;
+  background: rgba(142,142,147,0.10);
   padding: 12px;
   transition: transform 0.18s ease;
   will-change: transform;
+}
+body.dark .swipe-content{
+  background: rgba(255,255,255,0.03);
+}
+
+.amount{ font-weight: 800; }
+.note{ font-size: 14px; color: var(--muted); }
+
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap: 6px;
+  background: var(--chipBg);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  margin-top: 6px;
+  border: 1px solid var(--border);
 }
